@@ -1,8 +1,8 @@
 package mu.node.rexweather.app.Helpers;
 
-public class TemperatureFormatter {
+public class Formatter {
 
-    public static String format(float temperature) {
+    public static String temperature(float temperature) {
         return String.valueOf(Math.round(temperature)) + "°";
     }
 }

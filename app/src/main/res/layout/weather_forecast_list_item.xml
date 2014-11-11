@@ -19,13 +19,13 @@
         style="@style/WeatherForecastListItemText" />
 
     <TextView
-        android:id="@+id/maximum_temperature"
+        android:id="@+id/max_temp"
         android:text="19°"
         android:layout_weight="1"
         style="@style/WeatherForecastListItemTextEmphasis" />
 
     <TextView
-        android:id="@+id/minimum_temperature"
+        android:id="@+id/min_temp"
         android:text="15°"
         android:layout_weight="1"
         style="@style/WeatherForecastListItemTextDeEmphasis" />

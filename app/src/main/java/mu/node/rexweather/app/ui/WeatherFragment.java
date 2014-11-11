@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import org.apache.http.HttpException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import mu.node.rexweather.app.Helpers.DayFormatter;
-import mu.node.rexweather.app.Helpers.TemperatureFormatter;
+import mu.node.rexweather.app.Helpers.Formatter;
 import mu.node.rexweather.app.Models.CurrentWeather;
 import mu.node.rexweather.app.Models.WeatherForecast;
 import mu.node.rexweather.app.R;
@@ -65,16 +64,13 @@ public class WeatherFragment extends Fragment {
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              final Bundle savedInstanceState) {
-
         final View rootView = inflater.inflate(R.layout.fragment_weather, container, false);
         mLocationNameTextView = (TextView) rootView.findViewById(R.id.location_name);
-        mCurrentTemperatureTextView = (TextView) rootView
-                .findViewById(R.id.current_temperature);
+        mCurrentTemperatureTextView = (TextView) rootView.findViewById(R.id.current_temperature);
 
         // Set up list view for weather forecasts.
         mForecastListView = (ListView) rootView.findViewById(R.id.weather_forecast_list);
-        final WeatherForecastListAdapter adapter = new WeatherForecastListAdapter(
-                new ArrayList<WeatherForecast>(), getActivity());
+        final WeatherForecastListAdapter adapter = new WeatherForecastListAdapter(getActivity(), null);
         mForecastListView.setAdapter(adapter);
 
         mAttributionTextView = (TextView) rootView.findViewById(R.id.attribution);
@@ -109,8 +105,7 @@ public class WeatherFragment extends Fragment {
      */
     private class WeatherForecastListAdapter extends ArrayAdapter {
 
-        public WeatherForecastListAdapter(final List<WeatherForecast> weatherForecasts,
-                                          final Context context) {
+        public WeatherForecastListAdapter(final Context context, final List<WeatherForecast> weatherForecasts) {
             super(context, 0, weatherForecasts);
         }
 
@@ -121,47 +116,37 @@ public class WeatherFragment extends Fragment {
 
         @Override
         public View getView(final int position, View convertView, final ViewGroup parent) {
-            WeatherForecastListAdapter.ViewHolder viewHolder;
-
+            ViewHolder viewHolder;
             if (convertView == null) {
-                final LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-                convertView = layoutInflater.inflate(R.layout.weather_forecast_list_item, null);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.weather_forecast_list_item, parent, false);
 
-                viewHolder = new WeatherForecastListAdapter.ViewHolder();
-                viewHolder.dayTextView = (TextView) convertView.findViewById(R.id.day);
-                viewHolder.descriptionTextView = (TextView) convertView
-                        .findViewById(R.id.description);
-                viewHolder.maximumTemperatureTextView = (TextView) convertView
-                        .findViewById(R.id.maximum_temperature);
-                viewHolder.minimumTemperatureTextView = (TextView) convertView
-                        .findViewById(R.id.minimum_temperature);
+                viewHolder = new ViewHolder();
+                viewHolder.dayTxtView = (TextView) convertView.findViewById(R.id.day);
+                viewHolder.descTxtView = (TextView) convertView.findViewById(R.id.description);
+                viewHolder.maxTempTxtView = (TextView) convertView.findViewById(R.id.max_temp);
+                viewHolder.minTempTxtView = (TextView) convertView.findViewById(R.id.min_temp);
                 convertView.setTag(viewHolder);
             } else {
-                viewHolder = (WeatherForecastListAdapter.ViewHolder) convertView.getTag();
+                viewHolder = (ViewHolder) convertView.getTag();
             }
-
             final WeatherForecast weatherForecast = (WeatherForecast) getItem(position);
-
             final DayFormatter dayFormatter = new DayFormatter(getActivity());
             final String day = dayFormatter.format(weatherForecast.getTimestamp());
-            viewHolder.dayTextView.setText(day);
-            viewHolder.descriptionTextView.setText(weatherForecast.getDescription());
-            viewHolder.maximumTemperatureTextView.setText(
-                    TemperatureFormatter.format(weatherForecast.getMaximumTemperature()));
-            viewHolder.minimumTemperatureTextView.setText(
-                    TemperatureFormatter.format(weatherForecast.getMinimumTemperature()));
-
+            viewHolder.dayTxtView.setText(day);
+            viewHolder.descTxtView.setText(weatherForecast.getDescription());
+            viewHolder.maxTempTxtView.setText(Formatter.temperature(weatherForecast.getMaximumTemperature()));
+            viewHolder.minTempTxtView.setText(Formatter.temperature(weatherForecast.getMinimumTemperature()));
             return convertView;
         }
 
         /**
          * Cache to avoid doing expensive findViewById() calls for each getView().
          */
-        private class ViewHolder {
-            TextView dayTextView;
-            TextView descriptionTextView;
-            TextView maximumTemperatureTextView;
-            TextView minimumTemperatureTextView;
+        class ViewHolder {
+            TextView dayTxtView;
+            TextView descTxtView;
+            TextView maxTempTxtView;
+            TextView minTempTxtView;
         }
     }
 
@@ -218,7 +203,7 @@ public class WeatherFragment extends Fragment {
                                         .get(KEY_CURRENT_WEATHER);
                                 mLocationNameTextView.setText(currentWeather.getLocationName());
                                 mCurrentTemperatureTextView.setText(
-                                        TemperatureFormatter.format(currentWeather.getTemperature()));
+                                        Formatter.temperature(currentWeather.getTemperature()));
 
                                 // Update weather forecast list.
                                 final List<WeatherForecast> weatherForecasts = (List<WeatherForecast>)
